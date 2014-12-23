@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+>程序员的伟大之处在于他们喜欢偷懒                           
+
+注册了域名好久，一直搞不好啊，不晓得为什么，虽然教程已经写得很明显了
+
+- [Github简明教程](http://www.yanyulin.info/pages/2013/11/github.html)
+- [将GitHub关联到域名上](http://hgping918.blog.51cto.com/6379003/1534244)
+- [如何搭建一个独立博客——简明Github Pages与Hexo教程](http://www.jianshu.com/p/05289a4bc8b2)
+
+后来终于发现了一个封装好的包可以用，我就觉得有需求就会有市场，肯定会有程序员同学来做这个事情的，对于喜欢偷懒的我，就毫无疑问的选择了这个[**simple**](http://isnowfy.github.io/simple/)，这个**simple**简直取名太贴切
+### 教程
+[用静态页面生成静态博客](http://isnowfy.github.io/about-simple-cn.html)
+
+只需要注册一个[域名](http://www.net.cn/)，注册一个[github账号](https://github.com/)，就可以建立好自己的一个网站了，现在我还处于摸索阶段，对于改变模版，添加评论，后续还需继续摸索。
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<blockquote>
+  <p>程序员的伟大之处在于他们喜欢偷懒                           </p>
+</blockquote>
+
+<p>注册了域名好久，一直搞不好啊，不晓得为什么，虽然教程已经写得很明显了</p>
+
+<ul>
+<li><a href="http://www.yanyulin.info/pages/2013/11/github.html">Github简明教程</a></li>
+<li><a href="http://hgping918.blog.51cto.com/6379003/1534244">将GitHub关联到域名上</a></li>
+<li><a href="http://www.jianshu.com/p/05289a4bc8b2">如何搭建一个独立博客——简明Github Pages与Hexo教程</a></li>
+</ul>
+
+<p>后来终于发现了一个封装好的包可以用，我就觉得有需求就会有市场，肯定会有程序员同学来做这个事情的，对于喜欢偷懒的我，就毫无疑问的选择了这个<a href="http://isnowfy.github.io/simple/"><strong>simple</strong></a>，这个<strong>simple</strong>简直取名太贴切</p>
+
+<h3 id="">教程</h3>
+
+<p><a href="http://isnowfy.github.io/about-simple-cn.html">用静态页面生成静态博客</a></p>
+
+<p>只需要注册一个<a href="http://www.net.cn/">域名</a>，注册一个<a href="https://github.com/">github账号</a>，就可以建立好自己的一个网站了，现在我还处于摸索阶段，对于改变模版，添加评论，后续还需继续摸索。</p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "bk.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
