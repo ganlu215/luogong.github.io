@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+# RExcel安装初试 #
+
+---
+今天尝试了一下Rexcel，使得R与excel相链接，就相当于excel添加了一个加载项，使得excel能利用R 的一些函数和包
+![](http://i.imgur.com/UnoMyxg.png)
+
+- [RExcel- 在Excel 內使用 R Commander](http://cc.shu.edu.tw/~tsungwu/workshop/ResourcesForR/eMaterials.html)
+- [R commander (Rcmdr)](http://www.rcommander.com/)
+- [statconn](http://rcom.univie.ac.at/)
+
+如果要实用的话，其实只需要在[statconn](http://rcom.univie.ac.at/)的[download](http://rcom.univie.ac.at/)里面下载**RExcel 3.2.15**和**statconnDCOM**安装即可，在[RExcel- 在Excel 內使用 R Commander](http://cc.shu.edu.tw/~tsungwu/workshop/ResourcesForR/eMaterials.html)里面提到需要转换R的版本，不知道过了这么久是不是还需要转换版本，我觉得转换版本是因为**Rcmdr**的安装问题，现在我在R3.1.2已经安装好了，至于怎么安装好的，我现在大概也忘了，杯具。但是因为现在载入Rcmdr增益集还是灰的用不了，我猜还是R版本的问题，接下来其实可以在R2.1.5里面安装Rcmdr试试行不行。至少现在是Rexcel已经安装成功了，接下来试试能用的东西是哪些了。
+![](http://i.imgur.com/qEwKUmP.png)
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h1 id="rexcel">RExcel安装初试</h1>
+
+<hr>
+
+<p>今天尝试了一下Rexcel，使得R与excel相链接，就相当于excel添加了一个加载项，使得excel能利用R 的一些函数和包
+<img src="http://i.imgur.com/UnoMyxg.png" alt="" title=""></p>
+
+<ul>
+<li><a href="http://cc.shu.edu.tw/~tsungwu/workshop/ResourcesForR/eMaterials.html">RExcel- 在Excel 內使用 R Commander</a></li>
+<li><a href="http://www.rcommander.com/">R commander (Rcmdr)</a></li>
+<li><a href="http://rcom.univie.ac.at/">statconn</a></li>
+</ul>
+
+<p>如果要实用的话，其实只需要在<a href="http://rcom.univie.ac.at/">statconn</a>的<a href="http://rcom.univie.ac.at/">download</a>里面下载<strong>RExcel 3.2.15</strong>和<strong>statconnDCOM</strong>安装即可，在<a href="http://cc.shu.edu.tw/~tsungwu/workshop/ResourcesForR/eMaterials.html">RExcel- 在Excel 內使用 R Commander</a>里面提到需要转换R的版本，不知道过了这么久是不是还需要转换版本，我觉得转换版本是因为<strong>Rcmdr</strong>的安装问题，现在我在R3.1.2已经安装好了，至于怎么安装好的，我现在大概也忘了，杯具。但是因为现在载入Rcmdr增益集还是灰的用不了，我猜还是R版本的问题，接下来其实可以在R2.1.5里面安装Rcmdr试试行不行。至少现在是Rexcel已经安装成功了，接下来试试能用的东西是哪些了。
+<img src="http://i.imgur.com/qEwKUmP.png" alt="" title=""></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
