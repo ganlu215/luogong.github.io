@@ -1,0 +1,222 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+曾经听别人说过，随着R语言的越来越常用，如何提高自己的价值就是自己创作自己的R包，今天在知乎上看到一个看技术博客的新技能，就是代码来实现，之后封装成包，这样既有代码，又get了新的技能。
+
+在windows上开发是首先要安装[Rtools](http://cran.r-project.org/bin/windows/Rtools/)，还有[tdm-gcc](http://tdm-gcc.tdragon.net/)等等，同时要在环境变量里面添加路径
+同时要把R的bin添加到环境变量里面去。
+写到这里，我不禁想换linux系统了，用windows开发真是麻烦呐，但是学linux又要花时间，还是另找时间吧，先专注学语言比较好。
+
+在控制台里面运行
+```
+r --version
+gcc --version
+```
+如果没有报错，证明已经安装成功，R语言提供了最简单的方法就是package.skeleton()。	
+
+
+```
+##The CSV file read folder and  linear regression  
+##x:file path
+setwd(E:/study/R/Rpackage)
+cs <- matrix(nrow=length(fls),ncol=6)
+stat <- function(x){ 
+	for (f in 1:length(fls)){
+		lm.data <- read.csv(fls[f],header=F)
+		lm.model <- lm(lm.data[,4]~lm.data[,5]+lm.data[,6]+lm.data[,7]+lm.data[,8],)
+		a <- summary(lm.model)
+		inter.t <- a$coefficients[1,3]
+		inter.p <- a$coefficients[1,4]
+		f.t <- a$coefficients[3,3]
+		f.p <- a$coefficients[3,4]
+		adj <- a$adj.r.squared
+		cs[f,] <- cbind(fls[f],inter.t,inter.p,f.t,f.p,adj)
+        }
+	jg <- cs	
+	return(jg)
+}
+package.skeleton(name="Rgllm", list=c("cs","stat"))
+```
+这就形成了自己的自己的包，但是需要把man里面的rd文件的title填上，不然会报错
+打开控制台
+```
+cd E:\study\R\Rpackage
+R CMD build --binary Rgllm
+```
+这样就可以形成zip文件，这样就可以加载本地来利用自己的函数，这里记得把自己的包区分开来，因为我的包都是用来自己记录所看的技术分享的，需要记住自己的建立的包。
+
+```
+library(rgllm)
+setwd("C:/Users/andy/Desktop/yante/result/rate")
+x <- getwd()
+y <- stat(x)
+head(y)
+```
+![](http://i.imgur.com/dS73IsR.jpg)
+同样可以看自己函数的内部结构
+```
+？stat
+```
+![](http://i.imgur.com/Tx4mvbR.jpg)
+
+**参考**：[Windows下制作R的package](http://jliblog.com/archives/255)
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<p>曾经听别人说过，随着R语言的越来越常用，如何提高自己的价值就是自己创作自己的R包，今天在知乎上看到一个看技术博客的新技能，就是代码来实现，之后封装成包，这样既有代码，又get了新的技能。</p>
+
+<p>在windows上开发是首先要安装<a href="http://cran.r-project.org/bin/windows/Rtools/">Rtools</a>，还有<a href="http://tdm-gcc.tdragon.net/">tdm-gcc</a>等等，同时要在环境变量里面添加路径
+同时要把R的bin添加到环境变量里面去。
+写到这里，我不禁想换linux系统了，用windows开发真是麻烦呐，但是学linux又要花时间，还是另找时间吧，先专注学语言比较好。</p>
+
+<p>在控制台里面运行</p>
+
+<pre><code>r --version
+gcc --version
+</code></pre>
+
+<p>如果没有报错，证明已经安装成功，R语言提供了最简单的方法就是package.skeleton()。    </p>
+
+<pre><code>##The CSV file read folder and  linear regression  
+##x:file path
+setwd(E:/study/R/Rpackage)
+cs &lt;- matrix(nrow=length(fls),ncol=6)
+stat &lt;- function(x){ 
+    for (f in 1:length(fls)){
+        lm.data &lt;- read.csv(fls[f],header=F)
+        lm.model &lt;- lm(lm.data[,4]~lm.data[,5]+lm.data[,6]+lm.data[,7]+lm.data[,8],)
+        a &lt;- summary(lm.model)
+        inter.t &lt;- a$coefficients[1,3]
+        inter.p &lt;- a$coefficients[1,4]
+        f.t &lt;- a$coefficients[3,3]
+        f.p &lt;- a$coefficients[3,4]
+        adj &lt;- a$adj.r.squared
+        cs[f,] &lt;- cbind(fls[f],inter.t,inter.p,f.t,f.p,adj)
+        }
+    jg &lt;- cs    
+    return(jg)
+}
+package.skeleton(name="Rgllm", list=c("cs","stat"))
+</code></pre>
+
+<p>这就形成了自己的自己的包，但是需要把man里面的rd文件的title填上，不然会报错
+打开控制台</p>
+
+<pre><code>cd E:\study\R\Rpackage
+R CMD build --binary Rgllm
+</code></pre>
+
+<p>这样就可以形成zip文件，这样就可以加载本地来利用自己的函数，这里记得把自己的包区分开来，因为我的包都是用来自己记录所看的技术分享的，需要记住自己的建立的包。</p>
+
+<pre><code>library(rgllm)
+setwd("C:/Users/andy/Desktop/yante/result/rate")
+x &lt;- getwd()
+y &lt;- stat(x)
+head(y)
+</code></pre>
+
+<p><img src="http://i.imgur.com/dS73IsR.jpg" alt="" title="">
+同样可以看自己函数的内部结构</p>
+
+<pre><code>？stat
+</code></pre>
+
+<p><img src="http://i.imgur.com/Tx4mvbR.jpg" alt="" title=""></p>
+
+<p><strong>参考</strong>：<a href="http://jliblog.com/archives/255">Windows下制作R的package</a></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "Rpackage.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
