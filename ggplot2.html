@@ -1,0 +1,663 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+## 1、初步介绍 ##
+[ggplot2入门与进阶（上）](http://www.cellyse.com/how_to_use_gggplot2_part1/)
+
+[ggplot2入门和进阶（下）](http://www.cellyse.com/how_to_use_gggplot2_part2/#comments)
+- 几何对象(geometric object, 缩写为geom, 包括点、线、条形等)
+- 图形属性(aesthetic attributes, 缩写为aes, 包括颜色、形状、大小等)的一个映射。
+- 此外, 图形中还可能包含数据的统计变换(statistical transformation, 缩写为stats),
+- 最后绘制在某个特定的坐标系(coordinate system,  缩写为coord)中, 
+- 而分面(facet, 指将绘图窗口划分为若干个子窗口)则可以用来生成数据中不同子集的图形。
+
+
+
+1. 数据(data)
+2. 映射(mapping)
+3. 几何对象(geom)
+4. 统计变换(stats)
+5. 标度(scale)
+6. 坐标系(coord)
+7. 分面(facet)
+
+###1、初步体验
+cyl大小用颜色来表示
+```
+p <- ggplot(mtcars, aes(mpg, wt, colour = cyl)) +
+  geom_point() #geom_point()为通过”+”以图层的方式加入点的几何对象
+#将三个变量反映在图上，一个横坐标，一个纵坐标，一个图形属性（颜色、形状、大小）
+```
+![](http://i.imgur.com/NglWsJh.jpg)
+cyl大小用大小来表示
+```
+p <- ggplot(mtcars, aes(mpg, wt, size = cyl)) +
+  geom_point() #geom_point()为通过”+”以图层的方式加入点的几何对象
+#将三个变量反映在图上，一个横坐标，一个纵坐标，一个图形属性（颜色、形状、大小）
+```
+![](http://i.imgur.com/C4ZkV9p.jpg)
+同时改变点的颜色
+```
+p <- ggplot(mtcars, aes(mpg, wt, size = cyl)) +
++     geom_point(colour='blue') #geom_point()为通过”+”以图层的方式加入点的几何对象
+```
+![](http://i.imgur.com/t1MV0ie.jpg)
+
+###2、注意在这里写好图层之后如果数据改变只需要改变数据,不需要从新写代码
+
+```
+mtcars.c <- transform(mtcars, mpg = mpg^2)
+p %+% mtcars.c #用mtcars.c替换mtcars
+```
+### 3、reshape2的使用 ###
+参考：[几个好玩的R包](http://www.ganlou.me/rpackages.html)
+
+##2、仔细讲解 ##
+### 1、映射（mapping） ###
+#### (1) aes() ####
+aes()函数是ggplot2中的映射函数, 所谓的映射即为数据集中的数据关联到相应的图形属性过程中一种对应关系, 例如：
+```
+> p1 <- ggplot(data = mtcars)
+> summary(p1)
+data: mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb [32x11]
+faceting: facet_null() 
+> p2 <- ggplot(data = mtcars, mapping = aes(x = wt, y = hp, color = gear))
+> summary(p2)
+data: mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb [32x11]
+mapping:  x = wt, y = hp, colour = gear
+faceting: facet_null()
+```
+可以发现, 在p2中, 通过aes()指定了横纵坐标分别为wt和hp, 颜色为gear这三种图形属性, 在ggplot2中不同的几何对象对应着不同的图形属性
+#### (2) 设定和映射 ####
+>映射是将一个变量中离散或连续的数据与一个图形属性中以不同的参数来相互关联, 而设定能够将这个变量中所有的数据统一为一个图形属性。
+
+```
+p <- ggplot(mtcars, aes(wt, mpg)) 
+p + geom_point(color = "blue") #设定散点的颜色为蓝色
+```
+
+####  (3)分组(group)
+>也是ggplot2种映射关系的一种, 默认情况下ggplot2把所有观测点分为了一组, 如果需要把观测点按额外的离散变量进行分组处理, 必须修改默认的分组设置。
+
+```
+p1 <- ggplot(data = mtcars, mapping = aes(x = wt, y = hp)) + geom_line() 
+#默认分组设置, 即group=1
+#geom_line为折线图的几何对象
+p2 <- ggplot(data = mtcars, mapping = aes(x = wt, y = hp, group = factor(gear))) + geom_line() 
+#把wt和hp所对应的观测点按gear(gear以因子化变为离散变量)进行分组
+
+```
+![](http://i.imgur.com/WHA4NKH.jpg)
+![](http://i.imgur.com/cjcLLSV.jpg)
+### 2、图层 ###
+>每个图层可以代表一个图形组件, 例如下面要介绍的几何对象、统计变换等图形组件, 这些组件以图层的方式叠加在一起构成一个绘图的整体, 在每个图层中的图形组件又可以分别设定数据、映射或其他相关参数, 因此组件之间又是具有相对独立性的。
+
+#### (1)在几何对象中设定映射 ####
+```
+p <- ggplot(mtcars, aes(x = mpg, y = wt, color = factor(gear)))
+#设定默认的映射关系,注意这里用了factor(gear),不然画出来的的是颜色渐进的图
+p + geom_point()
+#沿用默认的映射关系来绘制散点图
+p + geom_point(aes(shape = factor(carb))) 
+#添加图层中的shape的映射关系
+p + geom_point(aes(y = carb))
+#修改默认的y的映射关系, 注意图中y轴名称仍然以默认的wt表示
+p + geom_point(aes(color = NULL))
+ #删除默认的color映射关系
+```
+![](http://i.imgur.com/ZOYLMbo.jpg)
+![](http://i.imgur.com/a1PKYtp.jpg)
+![](http://i.imgur.com/sBzuaaZ.jpg)
+![](http://i.imgur.com/EhVxgne.jpg)
+#### (2) 采用多个数据集或向量数据绘图 ####
+在很多种绘图场合中, 我们会运用到**多个数据集或同一数据集的不同变量**数据来进行图层叠加, 具体的例子如下
+```
+#构建不同于mtcars的数据集mtcars.c
+mtcars.c <- transform(mtcars, mpg = mpg^2)
+ggplot()+
+  geom_point(aes(x = hp, y = mpg), data = mtcars, color = "red") + 
+  geom_point(aes(x = mtcars$hp, y = mtcars$disp), color = "green")+ 
+  #选用向量数据
+  geom_point(aes(x = hp, y= mpg), data = mtcars.c, color = "blue") 
+  #选用不同的数据集
+```
+![](http://i.imgur.com/Yl2PsBQ.jpg)
+### 3、几何对象(geom)和统计变换(stat) ###
+前面只是讲解了散点图（geom），把数据进行一些统计变换（stat）是很重要的技能需要get
+>每一个几何对象都有一个默认的统计变换, 并且每一个统计变换都有一个默认的几何对象。正因如此, 这一设定将会使绘图过程变的灵活多变。
+
+所有的统计变换[官网](http://docs.ggplot2.org/current/)都有列有
+#### (1) geom_point()散点图 ####
+```
+p <- ggplot(mtcars, aes(wt, mpg))
+p + geom_point()
+#更改颜色-连续变量
+p + geom_point(aes(color = qsec))
+#更改颜色-离散变量
+p + geom_point(aes(color = factor(gear)))
+#更改透明度
+p + geom_point(aes(alpha = qsec))
+#更改形状
+p + geom_point(aes(shape = factor(gear)))
+#更改点大小
+p + geom_point(aes(size = qsec))
+#两种颜色的叠加
+p + geom_point(color = "grey50", size = 5) + geom_point(aes(color = qsec), size = 4)
+#颜色和形状的叠加
+p + geom_point(color = "grey50", size = 5) + geom_point(aes(shape = factor(gear)), size = 3)
+
+```
+#### (2) geom_histogram() ####
+```
+m <- ggplot(movies, aes(rating)) 
+#这里使用movies数据集
+m + geom_histogram()
+m + geom_histogram(bin = 0.5)
+#调整分箱(bin)数据
+m + geom_histogram(bin = 1)
+m + geom_histogram(bin = 2)
+```
+
+![](http://i.imgur.com/OQbwQ1R.jpg)
+![](http://i.imgur.com/Ro5aSOY.jpg)
+![](http://i.imgur.com/vgykKNt.jpg)
+![](http://i.imgur.com/SCqhVzu.jpg)
+**geom_histogram()**这个几何对象默认使用**stat_bin**这个统计变换, 而这个统计变换会生成
+- (1)count：每个组里观测值的数目, 
+- (2)density：每个组里观测值的密度和
+- (3)x：组的中心位置这三个变量。
+
+生成的变量在ggplot()中的再使用..围起来, 因此可以用来生成如下的图
+```
+m + geom_histogram(bin = 0.5, aes(fill =..count..))
+m + geom_histogram(bin = 0.5, aes(y = ..density..)) + geom_density()
+```
+![](http://i.imgur.com/73GsJdJ.jpg)
+![](http://i.imgur.com/Y17dqlh.jpg)
+
+元素位置的调整共有5种包括了
+- (1)dodge：并排方式; 
+- (2)fill：堆叠图像元素, 并将高度标准化为1, 
+- (3)identity：不做任何调整; 
+- (4)jitter：给点增加扰动避免重合
+- (5)stack：堆叠图像元素。
+
+```
+d <- ggplot(diamonds, aes(x = clarity, fill = cut ))
+d + geom_histogram(position = "dodge")
+d + geom_histogram(position = "fill")
+d + geom_histogram(position = "stack")
+ggplot(diamonds) + geom_point(aes(color, price/carat), position = "jitter")
+```
+![](http://i.imgur.com/Rl6cPAp.jpg)
+ ![](http://i.imgur.com/x1cZVzZ.jpg)
+![](http://i.imgur.com/NSpL61T.jpg)
+![](http://i.imgur.com/cS7Qx5j.jpg)
+**jitter**使某每一个点在x轴的方向上产生随机的偏移, 从而减少了图形重叠的问题
+
+很多情况下, 我们会采用固定的x轴和y轴值来进行作图, 此时需要用**stat = “identity” **来申明, 即表示不对数据进行统计变换
+```
+A <- c(1, 2, 3, 4, 5, 6, 7, 8)
+B <- c(2, 10, 11, 5, 6, 1, 10, 20)
+ggplot() + geom_histogram(aes(x = A, y = B), stat = "identity")
+```
+![](http://i.imgur.com/8GdwqiC.jpg)
+#### (3) geom_smooth() ####
+ **geom_smooth()**用来给数据添加平滑曲线, 所能采用的方法包括了**lm, glm, gam, loess, rlm**等, 这些方法需要通过加载公式来实现。
+```
+m <- ggplot(mtcars, aes(qsec, wt))
+m + stat_smooth() + geom_point()
+m + stat_smooth(se = FALSE) + geom_point()
+ #取消默认的置信区间
+m + stat_smooth(fill = "red", size = 2, alpha = 0.5, color = "green") + geom_point()
+#更改置信区间和线条颜色
+m + stat_smooth(method = "lm") + geom_point() 
+#用一元一次线性方程拟合
+m + stat_smooth(method = "lm", formula = y ~ poly(x, 3)) + geom_point() 
+#使用一元二次方程拟合
+require(splines)
+require(MASS)
+m + stat_smooth(method = "lm", formula = y ~ ns(x, 3)) + geom_point()
+# 加载splines和MASS包, 使用自由度为3的自然样条来进行拟合
+m <- ggplot(mtcars, aes(y = wt, x = mpg, group = factor(cyl)))
+m + stat_smooth(method = lm, aes(color = factor(cyl), fill = factor(cyl))) + geom_point( aes(color = factor(cyl)))
+#按cyl这个离散变量进行分组, 分别拟合数据
+```
+![](http://i.imgur.com/woldcDz.jpg)
+![](http://i.imgur.com/bWR3JWC.jpg)
+![](http://i.imgur.com/iUa1UiX.jpg)
+![](http://i.imgur.com/8LazGmq.jpg)
+![](http://i.imgur.com/d2AkG1F.jpg)
+![](http://i.imgur.com/0GU6zXb.jpg)
+![](http://i.imgur.com/9ksSCpz.jpg)
+### 标度(scale) ###
+### 分面(facet) ###
+- 网格型(facet_grid)
+- 封面型(facet_wrap)
+
+```
+p <- ggplot(mtcars, aes(mpg, wt)) + geom_point()
+p + facet_grid(. ~ cyl) #以cyl为分类变量
+p + facet_wrap( ~ cyl, nrow = 3) #wrap与grid的区别
+p + facet_grid(cyl ~ .) #以cyl为分类变量
+p + facet_wrap( ~ cyl, ncol = 3) #wrap与grid的区别
+p + facet_grid(vs ~ am) #以vs和am为分类变量
+p + facet_wrap(vs ~ am, ncol = 2) #wrap与grid 的区别
+```
+![](http://i.imgur.com/xEz6GX3.jpg)
+![](http://i.imgur.com/lgfMCF7.jpg)
+![](http://i.imgur.com/Tyo11jf.jpg)
+![](http://i.imgur.com/oMrJDnc.jpg)
+![](http://i.imgur.com/ywtevcz.jpg)
+![](http://i.imgur.com/FXWikvP.jpg)
+```
+p <- p + geom_smooth(method = "lm", se =F, aes(color = factor(cyl))) + geom_point(aes(color = factor(cyl)))
+p + facet_grid(vs ~ am)
+p + facet_grid(vs ~ am, margins = T) #使用margins来描述边际图
+p + facet_grid( ~ cyl, scales = "free")
+p + facet_grid( ~ cyl, scales = "free_x")
+```
+![](http://i.imgur.com/QDl6xCh.jpg)
+![](http://i.imgur.com/cxKsVYm.jpg)
+![](http://i.imgur.com/09Bm4Dt.jpg)
+![](http://i.imgur.com/kJ3BqHX.jpg)
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+<h2 id="1">1、初步介绍</h2>
+
+<p><a href="http://www.cellyse.com/how_to_use_gggplot2_part1/">ggplot2入门与进阶（上）</a></p>
+
+<p><a href="http://www.cellyse.com/how_to_use_gggplot2_part2/#comments">ggplot2入门和进阶（下）</a>
+- 几何对象(geometric object, 缩写为geom, 包括点、线、条形等)
+- 图形属性(aesthetic attributes, 缩写为aes, 包括颜色、形状、大小等)的一个映射。
+- 此外, 图形中还可能包含数据的统计变换(statistical transformation, 缩写为stats),
+- 最后绘制在某个特定的坐标系(coordinate system,  缩写为coord)中, 
+- 而分面(facet, 指将绘图窗口划分为若干个子窗口)则可以用来生成数据中不同子集的图形。</p>
+
+<ol>
+<li>数据(data)</li>
+<li>映射(mapping)</li>
+<li>几何对象(geom)</li>
+<li>统计变换(stats)</li>
+<li>标度(scale)</li>
+<li>坐标系(coord)</li>
+<li>分面(facet)</li>
+</ol>
+
+<h3 id="1">1、初步体验</h3>
+
+<p>cyl大小用颜色来表示</p>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(mpg, wt, colour = cyl)) +
+  geom_point() #geom_point()为通过”+”以图层的方式加入点的几何对象
+#将三个变量反映在图上，一个横坐标，一个纵坐标，一个图形属性（颜色、形状、大小）
+</code></pre>
+
+<p><img src="http://i.imgur.com/NglWsJh.jpg" alt="" title="">
+cyl大小用大小来表示</p>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(mpg, wt, size = cyl)) +
+  geom_point() #geom_point()为通过”+”以图层的方式加入点的几何对象
+#将三个变量反映在图上，一个横坐标，一个纵坐标，一个图形属性（颜色、形状、大小）
+</code></pre>
+
+<p><img src="http://i.imgur.com/C4ZkV9p.jpg" alt="" title="">
+同时改变点的颜色</p>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(mpg, wt, size = cyl)) +
++     geom_point(colour='blue') #geom_point()为通过”+”以图层的方式加入点的几何对象
+</code></pre>
+
+<p><img src="http://i.imgur.com/t1MV0ie.jpg" alt="" title=""></p>
+
+<h3 id="2">2、注意在这里写好图层之后如果数据改变只需要改变数据,不需要从新写代码</h3>
+
+<pre><code>mtcars.c &lt;- transform(mtcars, mpg = mpg^2)
+p %+% mtcars.c #用mtcars.c替换mtcars
+</code></pre>
+
+<h3 id="3reshape2">3、reshape2的使用</h3>
+
+<p>参考：<a href="http://www.ganlou.me/rpackages.html">几个好玩的R包</a></p>
+
+<h2 id="2">2、仔细讲解</h2>
+
+<h3 id="1mapping">1、映射（mapping）</h3>
+
+<h4 id="1aes">(1) aes()</h4>
+
+<p>aes()函数是ggplot2中的映射函数, 所谓的映射即为数据集中的数据关联到相应的图形属性过程中一种对应关系, 例如：</p>
+
+<pre><code>&gt; p1 &lt;- ggplot(data = mtcars)
+&gt; summary(p1)
+data: mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb [32x11]
+faceting: facet_null() 
+&gt; p2 &lt;- ggplot(data = mtcars, mapping = aes(x = wt, y = hp, color = gear))
+&gt; summary(p2)
+data: mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb [32x11]
+mapping:  x = wt, y = hp, colour = gear
+faceting: facet_null()
+</code></pre>
+
+<p>可以发现, 在p2中, 通过aes()指定了横纵坐标分别为wt和hp, 颜色为gear这三种图形属性, 在ggplot2中不同的几何对象对应着不同的图形属性</p>
+
+<h4 id="2">(2) 设定和映射</h4>
+
+<blockquote>
+  <p>映射是将一个变量中离散或连续的数据与一个图形属性中以不同的参数来相互关联, 而设定能够将这个变量中所有的数据统一为一个图形属性。</p>
+</blockquote>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(wt, mpg)) 
+p + geom_point(color = "blue") #设定散点的颜色为蓝色
+</code></pre>
+
+<h4 id="3group">(3)分组(group)</h4>
+
+<blockquote>
+  <p>也是ggplot2种映射关系的一种, 默认情况下ggplot2把所有观测点分为了一组, 如果需要把观测点按额外的离散变量进行分组处理, 必须修改默认的分组设置。</p>
+</blockquote>
+
+<pre><code>p1 &lt;- ggplot(data = mtcars, mapping = aes(x = wt, y = hp)) + geom_line() 
+#默认分组设置, 即group=1
+#geom_line为折线图的几何对象
+p2 &lt;- ggplot(data = mtcars, mapping = aes(x = wt, y = hp, group = factor(gear))) + geom_line() 
+#把wt和hp所对应的观测点按gear(gear以因子化变为离散变量)进行分组
+</code></pre>
+
+<p><img src="http://i.imgur.com/WHA4NKH.jpg" alt="" title="">
+<img src="http://i.imgur.com/cjcLLSV.jpg" alt="" title=""></p>
+
+<h3 id="2">2、图层</h3>
+
+<blockquote>
+  <p>每个图层可以代表一个图形组件, 例如下面要介绍的几何对象、统计变换等图形组件, 这些组件以图层的方式叠加在一起构成一个绘图的整体, 在每个图层中的图形组件又可以分别设定数据、映射或其他相关参数, 因此组件之间又是具有相对独立性的。</p>
+</blockquote>
+
+<h4 id="1">(1)在几何对象中设定映射</h4>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(x = mpg, y = wt, color = factor(gear)))
+#设定默认的映射关系,注意这里用了factor(gear),不然画出来的的是颜色渐进的图
+p + geom_point()
+#沿用默认的映射关系来绘制散点图
+p + geom_point(aes(shape = factor(carb))) 
+#添加图层中的shape的映射关系
+p + geom_point(aes(y = carb))
+#修改默认的y的映射关系, 注意图中y轴名称仍然以默认的wt表示
+p + geom_point(aes(color = NULL))
+ #删除默认的color映射关系
+</code></pre>
+
+<p><img src="http://i.imgur.com/ZOYLMbo.jpg" alt="" title="">
+<img src="http://i.imgur.com/a1PKYtp.jpg" alt="" title="">
+<img src="http://i.imgur.com/sBzuaaZ.jpg" alt="" title="">
+<img src="http://i.imgur.com/EhVxgne.jpg" alt="" title=""></p>
+
+<h4 id="2">(2) 采用多个数据集或向量数据绘图</h4>
+
+<p>在很多种绘图场合中, 我们会运用到<strong>多个数据集或同一数据集的不同变量</strong>数据来进行图层叠加, 具体的例子如下</p>
+
+<pre><code>#构建不同于mtcars的数据集mtcars.c
+mtcars.c &lt;- transform(mtcars, mpg = mpg^2)
+ggplot()+
+  geom_point(aes(x = hp, y = mpg), data = mtcars, color = "red") + 
+  geom_point(aes(x = mtcars$hp, y = mtcars$disp), color = "green")+ 
+  #选用向量数据
+  geom_point(aes(x = hp, y= mpg), data = mtcars.c, color = "blue") 
+  #选用不同的数据集
+</code></pre>
+
+<p><img src="http://i.imgur.com/Yl2PsBQ.jpg" alt="" title=""></p>
+
+<h3 id="3geomstat">3、几何对象(geom)和统计变换(stat)</h3>
+
+<p>前面只是讲解了散点图（geom），把数据进行一些统计变换（stat）是很重要的技能需要get</p>
+
+<blockquote>
+  <p>每一个几何对象都有一个默认的统计变换, 并且每一个统计变换都有一个默认的几何对象。正因如此, 这一设定将会使绘图过程变的灵活多变。</p>
+</blockquote>
+
+<p>所有的统计变换<a href="http://docs.ggplot2.org/current/">官网</a>都有列有</p>
+
+<h4 id="1geom_point">(1) geom_point()散点图</h4>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(wt, mpg))
+p + geom_point()
+#更改颜色-连续变量
+p + geom_point(aes(color = qsec))
+#更改颜色-离散变量
+p + geom_point(aes(color = factor(gear)))
+#更改透明度
+p + geom_point(aes(alpha = qsec))
+#更改形状
+p + geom_point(aes(shape = factor(gear)))
+#更改点大小
+p + geom_point(aes(size = qsec))
+#两种颜色的叠加
+p + geom_point(color = "grey50", size = 5) + geom_point(aes(color = qsec), size = 4)
+#颜色和形状的叠加
+p + geom_point(color = "grey50", size = 5) + geom_point(aes(shape = factor(gear)), size = 3)
+</code></pre>
+
+<h4 id="2geom_histogram">(2) geom_histogram()</h4>
+
+<pre><code>m &lt;- ggplot(movies, aes(rating)) 
+#这里使用movies数据集
+m + geom_histogram()
+m + geom_histogram(bin = 0.5)
+#调整分箱(bin)数据
+m + geom_histogram(bin = 1)
+m + geom_histogram(bin = 2)
+</code></pre>
+
+<p><img src="http://i.imgur.com/OQbwQ1R.jpg" alt="" title="">
+<img src="http://i.imgur.com/Ro5aSOY.jpg" alt="" title="">
+<img src="http://i.imgur.com/vgykKNt.jpg" alt="" title="">
+<img src="http://i.imgur.com/SCqhVzu.jpg" alt="" title="">
+<strong>geom<em>histogram()</em></strong><em>这个几何对象默认使用<strong>stat</strong></em><strong>bin</strong>这个统计变换, 而这个统计变换会生成
+- (1)count：每个组里观测值的数目, 
+- (2)density：每个组里观测值的密度和
+- (3)x：组的中心位置这三个变量。</p>
+
+<p>生成的变量在ggplot()中的再使用..围起来, 因此可以用来生成如下的图</p>
+
+<pre><code>m + geom_histogram(bin = 0.5, aes(fill =..count..))
+m + geom_histogram(bin = 0.5, aes(y = ..density..)) + geom_density()
+</code></pre>
+
+<p><img src="http://i.imgur.com/73GsJdJ.jpg" alt="" title="">
+<img src="http://i.imgur.com/Y17dqlh.jpg" alt="" title=""></p>
+
+<p>元素位置的调整共有5种包括了
+- (1)dodge：并排方式; 
+- (2)fill：堆叠图像元素, 并将高度标准化为1, 
+- (3)identity：不做任何调整; 
+- (4)jitter：给点增加扰动避免重合
+- (5)stack：堆叠图像元素。</p>
+
+<pre><code>d &lt;- ggplot(diamonds, aes(x = clarity, fill = cut ))
+d + geom_histogram(position = "dodge")
+d + geom_histogram(position = "fill")
+d + geom_histogram(position = "stack")
+ggplot(diamonds) + geom_point(aes(color, price/carat), position = "jitter")
+</code></pre>
+
+<p><img src="http://i.imgur.com/Rl6cPAp.jpg" alt="" title="">
+ <img src="http://i.imgur.com/x1cZVzZ.jpg" alt="" title="">
+<img src="http://i.imgur.com/NSpL61T.jpg" alt="" title="">
+<img src="http://i.imgur.com/cS7Qx5j.jpg" alt="" title="">
+<strong>jitter</strong>使某每一个点在x轴的方向上产生随机的偏移, 从而减少了图形重叠的问题</p>
+
+<p>很多情况下, 我们会采用固定的x轴和y轴值来进行作图, 此时需要用<em>*stat = “identity” *</em>来申明, 即表示不对数据进行统计变换</p>
+
+<pre><code>A &lt;- c(1, 2, 3, 4, 5, 6, 7, 8)
+B &lt;- c(2, 10, 11, 5, 6, 1, 10, 20)
+ggplot() + geom_histogram(aes(x = A, y = B), stat = "identity")
+</code></pre>
+
+<p><img src="http://i.imgur.com/8GdwqiC.jpg" alt="" title=""></p>
+
+<h4 id="3geom_smooth">(3) geom_smooth()</h4>
+
+<p><strong>geom_smooth()</strong>用来给数据添加平滑曲线, 所能采用的方法包括了<strong>lm, glm, gam, loess, rlm</strong>等, 这些方法需要通过加载公式来实现。</p>
+
+<pre><code>m &lt;- ggplot(mtcars, aes(qsec, wt))
+m + stat_smooth() + geom_point()
+m + stat_smooth(se = FALSE) + geom_point()
+ #取消默认的置信区间
+m + stat_smooth(fill = "red", size = 2, alpha = 0.5, color = "green") + geom_point()
+#更改置信区间和线条颜色
+m + stat_smooth(method = "lm") + geom_point() 
+#用一元一次线性方程拟合
+m + stat_smooth(method = "lm", formula = y ~ poly(x, 3)) + geom_point() 
+#使用一元二次方程拟合
+require(splines)
+require(MASS)
+m + stat_smooth(method = "lm", formula = y ~ ns(x, 3)) + geom_point()
+# 加载splines和MASS包, 使用自由度为3的自然样条来进行拟合
+m &lt;- ggplot(mtcars, aes(y = wt, x = mpg, group = factor(cyl)))
+m + stat_smooth(method = lm, aes(color = factor(cyl), fill = factor(cyl))) + geom_point( aes(color = factor(cyl)))
+#按cyl这个离散变量进行分组, 分别拟合数据
+</code></pre>
+
+<p><img src="http://i.imgur.com/woldcDz.jpg" alt="" title="">
+<img src="http://i.imgur.com/bWR3JWC.jpg" alt="" title="">
+<img src="http://i.imgur.com/iUa1UiX.jpg" alt="" title="">
+<img src="http://i.imgur.com/8LazGmq.jpg" alt="" title="">
+<img src="http://i.imgur.com/d2AkG1F.jpg" alt="" title="">
+<img src="http://i.imgur.com/0GU6zXb.jpg" alt="" title="">
+<img src="http://i.imgur.com/9ksSCpz.jpg" alt="" title=""></p>
+
+<h3 id="scale">标度(scale)</h3>
+
+<h3 id="facet">分面(facet)</h3>
+
+<ul>
+<li>网格型(facet_grid)</li>
+<li>封面型(facet_wrap)</li>
+</ul>
+
+<pre><code>p &lt;- ggplot(mtcars, aes(mpg, wt)) + geom_point()
+p + facet_grid(. ~ cyl) #以cyl为分类变量
+p + facet_wrap( ~ cyl, nrow = 3) #wrap与grid的区别
+p + facet_grid(cyl ~ .) #以cyl为分类变量
+p + facet_wrap( ~ cyl, ncol = 3) #wrap与grid的区别
+p + facet_grid(vs ~ am) #以vs和am为分类变量
+p + facet_wrap(vs ~ am, ncol = 2) #wrap与grid 的区别
+</code></pre>
+
+<p><img src="http://i.imgur.com/xEz6GX3.jpg" alt="" title="">
+<img src="http://i.imgur.com/lgfMCF7.jpg" alt="" title="">
+<img src="http://i.imgur.com/Tyo11jf.jpg" alt="" title="">
+<img src="http://i.imgur.com/oMrJDnc.jpg" alt="" title="">
+<img src="http://i.imgur.com/ywtevcz.jpg" alt="" title="">
+<img src="http://i.imgur.com/FXWikvP.jpg" alt="" title=""></p>
+
+<pre><code>p &lt;- p + geom_smooth(method = "lm", se =F, aes(color = factor(cyl))) + geom_point(aes(color = factor(cyl)))
+p + facet_grid(vs ~ am)
+p + facet_grid(vs ~ am, margins = T) #使用margins来描述边际图
+p + facet_grid( ~ cyl, scales = "free")
+p + facet_grid( ~ cyl, scales = "free_x")
+</code></pre>
+
+<p><img src="http://i.imgur.com/QDl6xCh.jpg" alt="" title="">
+<img src="http://i.imgur.com/cxKsVYm.jpg" alt="" title="">
+<img src="http://i.imgur.com/09Bm4Dt.jpg" alt="" title="">
+<img src="http://i.imgur.com/kJ3BqHX.jpg" alt="" title=""></p>
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "ggplot2.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
