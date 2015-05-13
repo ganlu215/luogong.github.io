@@ -29,6 +29,7 @@
 [ggplot2入门与进阶（上）](http://www.cellyse.com/how_to_use_gggplot2_part1/)
 
 [ggplot2入门和进阶（下）](http://www.cellyse.com/how_to_use_gggplot2_part2/#comments)
+
 - 几何对象(geometric object, 缩写为geom, 包括点、线、条形等)
 - 图形属性(aesthetic attributes, 缩写为aes, 包括颜色、形状、大小等)的一个映射。
 - 此外, 图形中还可能包含数据的统计变换(statistical transformation, 缩写为stats),
@@ -36,7 +37,8 @@
 - 而分面(facet, 指将绘图窗口划分为若干个子窗口)则可以用来生成数据中不同子集的图形。
 
 
-
+总的来讲可以简单的记忆：
+ 
 1. 数据(data)
 2. 映射(mapping)
 3. 几何对象(geom)
@@ -294,12 +296,17 @@ p + facet_grid( ~ cyl, scales = "free_x")
 
 <p><a href="http://www.cellyse.com/how_to_use_gggplot2_part1/">ggplot2入门与进阶（上）</a></p>
 
-<p><a href="http://www.cellyse.com/how_to_use_gggplot2_part2/#comments">ggplot2入门和进阶（下）</a>
-- 几何对象(geometric object, 缩写为geom, 包括点、线、条形等)
-- 图形属性(aesthetic attributes, 缩写为aes, 包括颜色、形状、大小等)的一个映射。
-- 此外, 图形中还可能包含数据的统计变换(statistical transformation, 缩写为stats),
-- 最后绘制在某个特定的坐标系(coordinate system,  缩写为coord)中, 
-- 而分面(facet, 指将绘图窗口划分为若干个子窗口)则可以用来生成数据中不同子集的图形。</p>
+<p><a href="http://www.cellyse.com/how_to_use_gggplot2_part2/#comments">ggplot2入门和进阶（下）</a></p>
+
+<ul>
+<li>几何对象(geometric object, 缩写为geom, 包括点、线、条形等)</li>
+<li>图形属性(aesthetic attributes, 缩写为aes, 包括颜色、形状、大小等)的一个映射。</li>
+<li>此外, 图形中还可能包含数据的统计变换(statistical transformation, 缩写为stats),</li>
+<li>最后绘制在某个特定的坐标系(coordinate system,  缩写为coord)中, </li>
+<li>而分面(facet, 指将绘图窗口划分为若干个子窗口)则可以用来生成数据中不同子集的图形。</li>
+</ul>
+
+<p>总的来讲可以简单的记忆：</p>
 
 <ol>
 <li>数据(data)</li>
